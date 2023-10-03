@@ -24,6 +24,11 @@ namespace CauchySolver
 				return state[i];
 			}
 
+			auto& operator[](size_t i)
+			{
+				return state[i];
+			}
+
 			std::array<double, problem_size_t>
 				state;
 
@@ -36,60 +41,81 @@ namespace CauchySolver
 		template<size_t problem_size_t>
 		State<problem_size_t> operator+(
 			const State<problem_size_t>& lhs,
-			State<problem_size_t>& rhs)
+			const State<problem_size_t>& rhs)
 		{
-			State<problem_size_t> out;
-			for (size_t i = 0; i < out; ++i)
-				out[i] = lhs[i] + rhs[i];
+			State<problem_size_t> out{ lhs };
+			for (size_t i = 0; i < out.size(); ++i)
+				out[i] += rhs[i];
 			return out;
 		}
 
 		template<size_t problem_size_t>
 		State<problem_size_t> operator*(
 			double lhs,
-			State<problem_size_t>& rhs)
+			const State<problem_size_t>& rhs)
 		{
-			State<problem_size_t> out;
-			for (size_t i = 0; i < out; ++i)
-				out[i] = lhs * rhs[i];
+			State<problem_size_t> out{ rhs };
+			for (size_t i = 0; i < out.size(); ++i)
+				out[i] *= lhs;
 			return out;
 		}
 		template<size_t problem_size_t>
 		State<problem_size_t> operator*(
-			State<problem_size_t>& lhs,
+			const State<problem_size_t>& lhs,
 			double rhs)
 		{
 			return rhs * lhs;
 		}
 
-
-		template
-		<
+		template<
 			typename State_t,
-			typename Params_t
-		>
-			struct RK4
+			typename Params_t,
+			typename Grid_t,
+			typename RHS_t>
+			struct Solver
 		{
-
 			Params_t params;
-			RK4(const Params_t& params) :
-				params{ params }
-			{}
+			Grid_t grid;
+			State_t init_state;
+			RHS_t rhs;
 
-			template<typename RHS_t>
-				State_t operator()(
-					const State_t& state,
-					const RHS_t& rhs,
-					double h)
+			Solver(
+				const Params_t& params,
+				const Grid_t& grid,
+				const State_t& init_state,
+				const RHS_t& rhs) :
+				params{ params },
+				grid{ grid },
+				init_state{ init_state },
+				rhs{ rhs }
 			{
-				State_t k1{ rhs(state, params) };
-				State_t k2{ rhs(state + h / 2.0 * k1, params) };
-				State_t k3{ rhs(state + h / 2.0 * k2, params) };
-				State_t k4{ rhs(state + h * k3, params) };
-
-				return state + h / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4);
+				its_result.reserve(grid.size());
 			}
 
+			template<
+				//template<typename State_t, typename Params_t>
+				typename LocalSolver_t>
+				void solve(const LocalSolver_t& local_solver)
+			{
+				its_result.emplace_back(init_state);
+				for (size_t i = 1; i < grid.size(); ++i)
+					its_result.emplace_back(local_solver(its_result.back(), rhs, grid.step(i)));
+			}
+
+			const std::vector<State_t>& result() const
+			{
+				if (its_result.size() == 0)
+					throw std::exception("One has to call solve() method to compute the result.");
+				return its_result;
+			}
+
+			const State_t result(size_t i) const
+			{
+				return result()[i];
+			}
+
+		protected:
+			std::vector<State_t> its_result;
 		};
 	} // AbstractSolver
 } // CauchySolver
@@ -136,19 +162,20 @@ namespace CauchySolver
 		double its_step;
 		
 	};
-	
-
-	constexpr size_t problem_size = 4;
-	using ConcreteState = CauchySolver::AbstractSolver::State<problem_size>;
 
 	struct ConcreteParams
 	{
 		double omega2;
 	};
 
+	constexpr size_t problem_size = 2;
+	using ConcreteState = CauchySolver::AbstractSolver::State<problem_size>;
+
 	struct ConcreteRHS
 	{
-		ConcreteState operator()(const ConcreteState& y, const ConcreteParams& params) const
+		ConcreteState operator()(
+			const ConcreteState& y, 
+			const ConcreteParams& params) const
 		{
 			return ConcreteState
 			{
@@ -158,47 +185,73 @@ namespace CauchySolver
 		}
 	};
 
-	template<
+	using ConcreteSolver =
+		CauchySolver::AbstractSolver::Solver
+		<
+			ConcreteState,
+			ConcreteParams,
+			UniformGrid,
+			ConcreteRHS
+		>;
+
+	template
+		<
 		typename State_t,
-		typename Params_t,
-		typename Grid_t,
-		typename RHS_t>
-	struct Solver
+		typename Params_t
+		>
+		struct RK4
 	{
+
 		Params_t params;
-		Grid_t grid;
-		State_t init_state;
-		RHS_t rhs;
+		RK4(const Params_t& params) :
+			params{ params }
+		{}
 
-		Solver(
-			const Params_t& params,
-			const Grid_t& grid,
-			const State_t& init_state,
-			const RHS_t& rhs) :
-			params{params},
-			grid{grid},
-			init_state{init_state},
-			rhs{rhs}
+		template<typename RHS_t>
+		State_t operator()(
+			const State_t& state,
+			const RHS_t& rhs,
+			double h) const
 		{
-			its_result.reserve(grid.size());
+			//	using CauchySolver::AbstractSolver;
+			State_t k1{ rhs(state, params) };
+			State_t k2{ rhs(state + h / 2.0 * k1, params) };
+			State_t k3{ rhs(state + h / 2.0 * k2, params) };
+			State_t k4{ rhs(state + h * k3, params) };
+
+			return state + h / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4);
+		}
+	};
+
+	struct ConcreteVerifier
+	{
+		ConcreteVerifier(
+			double C, double L,
+			double q0, double I0) :
+			C{C}, L{L}
+		{
+			E = (C*q0*q0 + L*I0*I0) / 2.0;
 		}
 
-		template<typename LocalSolver_t>
-		void solve(const LocalSolver_t& local_solver)
+		void verify(const ConcreteSolver& solver)
 		{
-			its_result[0] = init_state;
-			for (size_t i = 1; i < grid.size(); ++i)
-				its_result[i] = local_solver(result[i - 1], rhs, grid.step(i));
+			calc_energy.reserve(solver.grid.size());
+			abs_diff.reserve(solver.grid.size());
+			rel_diff.reserve(solver.grid.size());
+			for (size_t i = 0; i < calc_energy.capacity(); ++i)
+			{
+				double q{ solver.result(i)[0] };
+				double I{ solver.result(i)[1] };
+				calc_energy.push_back((C * q * q + L * I * I) / 2.0);
+				abs_diff.push_back(std::abs(calc_energy.back() - E));
+				rel_diff.push_back(abs_diff.back() / std::abs(calc_energy.back() + E));
+			}
 		}
 
-		const std::vector<State_t>& result() const
-		{
-			if (its_result.size() == 0)
-				throw std::exception("One has to call solve() method to compute the result.");
-			return its_result;
-		}
+		double C, L;
+		double E;
 
-	protected:
-		std::vector<State_t> its_result;
+		std::vector<double> calc_energy;
+		std::vector<double> abs_diff, rel_diff;
 	};
 

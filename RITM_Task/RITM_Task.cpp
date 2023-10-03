@@ -7,14 +7,15 @@
 
 int main()
 {
-    double C = 1.0;
-    double L = 1.0;
-    double omega2 = C / L;
+    double C{ 1.0 };
+    double L{ 1.0 };
+    double omega2{ C / L };
 
     ConcreteParams params{ omega2 };
 
-    double U0 = 1.0;
-    double I0 = 0.0;
+    double U0{ 1.0 };
+    double I0{ 0.0 };
+    double q0{ U0 / C };
     ConcreteState init_state{U0/C, I0};
 
     ConcreteRHS rhs{};
@@ -22,20 +23,14 @@ int main()
 
     UniformGrid grid{0.0, 100.0, 0.1};
 
-    Solver
-        <
-        ConcreteState,
-        ConcreteParams,
-        UniformGrid,
-        ConcreteRHS
-        >
-        solver{params, grid, init_state, rhs};
+    ConcreteSolver solver{params, grid, init_state, rhs};
 
-    CauchySolver::AbstractSolver::RK4<ConcreteState, ConcreteParams> 
-        rk4{ params };
+    solver.solve(
+        RK4<ConcreteState, ConcreteParams>{params}
+    );
 
-  //  solver.solve<>
-
+    ConcreteVerifier verifier{ C, L, q0, I0 };
+    verifier.verify(solver);
 
     std::cout << "Hello World!\n";
 }
