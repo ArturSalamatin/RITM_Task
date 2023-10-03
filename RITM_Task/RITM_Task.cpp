@@ -18,8 +18,9 @@ int main()
     ConcreteState init_state{U0/C, I0};
 
     ConsreteRHS rhs{};
-
     auto init_differential{ rhs(init_state, params) };
+
+    UniformGrid grid{0.0, 100.0, 0.1};
 
 
     std::cout << "Hello World!\n";
