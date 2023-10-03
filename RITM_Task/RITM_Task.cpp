@@ -5,6 +5,20 @@
 
 #include "RK4.h"
 
+template<typename rk, typename Solver_t, typename Params_t>
+auto verify(
+    const Solver_t& solver_temp, 
+    const Params_t& params,
+    const ConcreteVerifier& verifier_temp)
+{
+    auto solver{ solver_temp };
+    solver.solve(rk{params});
+ //   ConcreteVerifier verifier{ C, L, q0, I0 };
+    auto verifier{ verifier_temp };
+    verifier.verify(solver);
+    return verifier;
+}
+
 int main()
 {
     double C{ 1.0 };
@@ -23,14 +37,11 @@ int main()
 
     UniformGrid grid{0.0, 100.0, 0.1};
 
-    ConcreteSolver solver{params, grid, init_state, rhs};
-
-    solver.solve(
-        RK4<ConcreteState, ConcreteParams>{params}
-    );
-
+    ConcreteSolver solver{ params, grid, init_state, rhs };
     ConcreteVerifier verifier{ C, L, q0, I0 };
-    verifier.verify(solver);
+    auto verifier4{verify<RK2<ConcreteState, ConcreteParams>>(solver, params, verifier)};
+    auto verifier2{ verify<RK2<ConcreteState, ConcreteParams>>(solver, params, verifier) };
+
 
     std::cout << "Hello World!\n";
 }

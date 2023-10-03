@@ -201,7 +201,6 @@ namespace CauchySolver
 		>
 		struct RK4
 	{
-
 		Params_t params;
 		RK4(const Params_t& params) :
 			params{ params }
@@ -220,6 +219,32 @@ namespace CauchySolver
 			State_t k4{ rhs(state + h * k3, params) };
 
 			return state + h / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4);
+		}
+	};
+
+	template
+		<
+		typename State_t,
+		typename Params_t
+		>
+		struct RK2
+	{
+		Params_t params;
+		RK2(const Params_t& params) :
+			params{ params }
+		{}
+
+		template<typename RHS_t>
+		State_t operator()(
+			const State_t& state,
+			const RHS_t& rhs,
+			double h) const
+		{
+			//	using CauchySolver::AbstractSolver;
+			State_t k1{ rhs(state, params) };
+			State_t k2{ rhs(state + h * k1, params) };
+
+			return state + h / 2.0 * (k1 + k2 );
 		}
 	};
 
