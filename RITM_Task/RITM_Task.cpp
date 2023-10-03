@@ -3,8 +3,25 @@
 
 #include <iostream>
 
+#include "RK4.h"
+
 int main()
 {
+    double C = 1.0;
+    double L = 1.0;
+    double omega2 = C / L;
+
+    ConcreteParams params{ omega2 };
+
+    double U0 = 1.0;
+    double I0 = 0.0;
+    ConcreteState init_state{U0/C, I0};
+
+    ConsreteRHS rhs{};
+
+    auto init_differential{ rhs(init_state, params) };
+
+
     std::cout << "Hello World!\n";
 }
 
