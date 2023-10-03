@@ -17,10 +17,19 @@ int main()
     double I0 = 0.0;
     ConcreteState init_state{U0/C, I0};
 
-    ConsreteRHS rhs{};
+    ConcreteRHS rhs{};
     auto init_differential{ rhs(init_state, params) };
 
     UniformGrid grid{0.0, 100.0, 0.1};
+
+    Solver
+        <
+        ConcreteState,
+        ConcreteParams,
+        UniformGrid,
+        ConcreteRHS
+        >
+        solver{params, grid, init_state, rhs};
 
 
     std::cout << "Hello World!\n";

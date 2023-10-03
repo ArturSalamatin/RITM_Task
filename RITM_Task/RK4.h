@@ -145,7 +145,7 @@ namespace CauchySolver
 		double omega2;
 	};
 
-	struct ConsreteRHS
+	struct ConcreteRHS
 	{
 		ConcreteState operator()(const ConcreteState& y, const ConcreteParams& params) const
 		{
@@ -170,15 +170,16 @@ namespace CauchySolver
 		RHS_t rhs;
 
 		Solver(
+			const Params_t& params,
 			const Grid_t& grid,
 			const State_t& init_state,
 			const RHS_t& rhs) :
-			params{rhs.params},
+			params{params},
 			grid{grid},
 			init_state{init_state},
 			rhs{rhs}
 		{
-			result.reserve(grid.size()); 
+			its_result.reserve(grid.size());
 		}
 
 		template<typename LocalSolver_t>
