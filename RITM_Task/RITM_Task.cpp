@@ -31,6 +31,11 @@ int main()
         >
         solver{params, grid, init_state, rhs};
 
+    CauchySolver::AbstractSolver::RK4<ConcreteState, ConcreteParams> 
+        rk4{ params };
+
+  //  solver.solve<>
+
 
     std::cout << "Hello World!\n";
 }

@@ -26,6 +26,11 @@ namespace CauchySolver
 
 			std::array<double, problem_size_t>
 				state;
+
+			constexpr static size_t size()
+			{
+				return problem_size_t;
+			}
 		};
 
 		template<size_t problem_size_t>
@@ -58,33 +63,29 @@ namespace CauchySolver
 		}
 
 
-		template<
-			size_t probem_size_t,
-			template<size_t problem_size_t>
-		typename State_t,
-			typename Params_t>
+		template
+		<
+			typename State_t,
+			typename Params_t
+		>
 			struct RK4
 		{
-			using State = State_t<probem_size_t>;
 
 			Params_t params;
 			RK4(const Params_t& params) :
 				params{ params }
 			{}
 
-			template<
-				typename Params_t,
-				typename RHS_t
-			>
-				State operator()(
-					const State& state,
+			template<typename RHS_t>
+				State_t operator()(
+					const State_t& state,
 					const RHS_t& rhs,
 					double h)
 			{
-				State k1{ rhs(state, params) };
-				State k2{ rhs(state + h / 2.0 * k1, params) };
-				State k3{ rhs(state + h / 2.0 * k2, params) };
-				State k4{ rhs(state + h * k3, params) };
+				State_t k1{ rhs(state, params) };
+				State_t k2{ rhs(state + h / 2.0 * k1, params) };
+				State_t k3{ rhs(state + h / 2.0 * k2, params) };
+				State_t k4{ rhs(state + h * k3, params) };
 
 				return state + h / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4);
 			}
