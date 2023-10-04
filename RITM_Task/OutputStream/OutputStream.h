@@ -23,6 +23,8 @@ namespace CauchySolver
 				abs_path = std::string{ path + std::string{"\\"} + fname};
 			
 			out_file.open(abs_path);
+			if (!out_file.is_open())
+				throw std::exception("The output file was not opened correctly.");
 
 			out_file
 				<< std::setw(15)
