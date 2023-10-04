@@ -142,7 +142,12 @@
     <ClCompile Include="RITM_Task.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RK4.h" />
+    <ClInclude Include="AbstractSolver\AbstractSolver.h" />
+    <ClInclude Include="AbstractSolver\State.h" />
+    <ClInclude Include="Grids\UniformGrid.h" />
+    <ClInclude Include="LocalSolver\RK2Explicit.h" />
+    <ClInclude Include="LocalSolver\RK4Explicit.h" />
+    <ClInclude Include="ConcreteSolver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

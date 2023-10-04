@@ -3,7 +3,9 @@
 
 #include <iostream>
 
-#include "RK4.h"
+#include "ConcreteSolver.h"
+#include "LocalSolver/RK2Explicit.h"
+#include "LocalSolver/RK4Explicit.h"
 
 template<typename rk, typename Solver_t, typename Params_t>
 auto verify(
@@ -39,8 +41,8 @@ int main()
 
     ConcreteSolver solver{ params, grid, init_state, rhs };
     ConcreteVerifier verifier{ C, L, q0, I0 };
-    auto verifier4{verify<RK2<ConcreteState, ConcreteParams>>(solver, params, verifier)};
-    auto verifier2{ verify<RK2<ConcreteState, ConcreteParams>>(solver, params, verifier) };
+    auto verifier4{verify<CauchySolver::LocalSolver::RK4<ConcreteState, ConcreteParams>>(solver, params, verifier)};
+    auto verifier2{ verify<CauchySolver::LocalSolver::RK2<ConcreteState, ConcreteParams>>(solver, params, verifier) };
 
 
     std::cout << "Hello World!\n";
