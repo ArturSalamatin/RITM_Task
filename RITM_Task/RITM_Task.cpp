@@ -45,15 +45,15 @@ int main()
     ConcreteVerifier verifier{ C, L, q0, I0 };
     auto [verifier4, solver4] = 
         verify<CauchySolver::LocalSolver::RK4<ConcreteState, ConcreteParams>>(verifier, solver, params);
-    /*auto [verifier2, solver2] {
-        verify<CauchySolver::LocalSolver::RK2<ConcreteState, ConcreteParams>>(verifier, solver, params)};*/
+    auto [verifier2, solver2] {
+        verify<CauchySolver::LocalSolver::RK2<ConcreteState, ConcreteParams>>(verifier, solver, params)};
 
     CauchySolver::Printer 
         printer4{"output4.txt"},
         printer2{"output2.txt"};
 
     printer4.print(verifier4, solver4);
- //   printer2.print(verifier2, solver2);
+    printer2.print(verifier2, solver2);
 
 
     std::cout << "Hello World!\n";
