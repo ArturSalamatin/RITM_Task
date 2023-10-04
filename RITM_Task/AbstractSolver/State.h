@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <iomanip>
 
 namespace CauchySolver
 {
@@ -66,6 +67,20 @@ namespace CauchySolver
 			double rhs)
 		{
 			return rhs * lhs;
+		}
+
+		template<typename stream, size_t problem_size_t>
+		stream& operator<<(stream& o, const State<problem_size_t>& state)
+		{
+			for (size_t id = 0; id < state.size(); ++id)
+				o
+				<< std::scientific
+				<< std::setw(17)
+				<< std::left
+				<< state[id];
+		//	o << '\n';
+
+			return o;
 		}
 	} // AbstractSolver
 } // CauchySolver

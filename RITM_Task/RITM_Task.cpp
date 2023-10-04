@@ -2,27 +2,25 @@
 //
 
 #include <iostream>
+#include <tuple>
 
 #include "ConcreteSolver.h"
 #include "OutputStream/OutputStream.h"
 #include "LocalSolver/RK2Explicit.h"
 #include "LocalSolver/RK4Explicit.h"
 
-template<
-    typename rk, 
-    typename Solver_t, 
-    typename Params_t>
-auto verify(
-    const Solver_t& solver_temp, 
-    const Params_t& params,
-    const ConcreteVerifier& verifier_temp)
+template<typename rk>
+ std::pair<ConcreteVerifier, ConcreteSolver>
+    verify(
+        const ConcreteVerifier& verifier_temp,
+        const ConcreteSolver& solver_temp, 
+        const ConcreteParams& params)
 {
     auto solver{ solver_temp };
     solver.solve(rk{params});
- //   ConcreteVerifier verifier{ C, L, q0, I0 };
     auto verifier{ verifier_temp };
     verifier.verify(solver);
-    return verifier;
+    return { verifier, solver };
 }
 
 int main()
@@ -45,8 +43,17 @@ int main()
 
     ConcreteSolver solver{ params, grid, init_state, rhs };
     ConcreteVerifier verifier{ C, L, q0, I0 };
-    auto verifier4{verify<CauchySolver::LocalSolver::RK4<ConcreteState, ConcreteParams>>(solver, params, verifier)};
-    auto verifier2{ verify<CauchySolver::LocalSolver::RK2<ConcreteState, ConcreteParams>>(solver, params, verifier) };
+    auto [verifier4, solver4] = 
+        verify<CauchySolver::LocalSolver::RK4<ConcreteState, ConcreteParams>>(verifier, solver, params);
+    /*auto [verifier2, solver2] {
+        verify<CauchySolver::LocalSolver::RK2<ConcreteState, ConcreteParams>>(verifier, solver, params)};*/
+
+    CauchySolver::Printer 
+        printer4{"output4.txt"},
+        printer2{"output2.txt"};
+
+    printer4.print(verifier4, solver4);
+ //   printer2.print(verifier2, solver2);
 
 
     std::cout << "Hello World!\n";

@@ -48,7 +48,7 @@ namespace CauchySolver
 				return its_result;
 			}
 
-			const State_t result(size_t i) const
+			const State_t& result(size_t i) const
 			{
 				return result()[i];
 			}
