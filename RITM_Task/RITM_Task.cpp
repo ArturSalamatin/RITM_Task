@@ -4,10 +4,14 @@
 #include <iostream>
 
 #include "ConcreteSolver.h"
+#include "OutputStream/OutputStream.h"
 #include "LocalSolver/RK2Explicit.h"
 #include "LocalSolver/RK4Explicit.h"
 
-template<typename rk, typename Solver_t, typename Params_t>
+template<
+    typename rk, 
+    typename Solver_t, 
+    typename Params_t>
 auto verify(
     const Solver_t& solver_temp, 
     const Params_t& params,
