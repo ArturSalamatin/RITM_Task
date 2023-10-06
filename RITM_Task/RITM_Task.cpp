@@ -36,7 +36,7 @@ int main()
     ConcreteRHS rhs{};
     // for test purposes
     // auto init_differential{ rhs(init_state, params) };
-    UniformGrid grid{0.0, 100.0, 0.1};
+    UniformGrid grid{0.0, 100.0, 0.2};
     ConcreteSolver solver{ params, grid, init_state, rhs };
     ConcreteVerifier verifier{ C, L, q0, I0 };
     auto [verifier4, solver4] = 
